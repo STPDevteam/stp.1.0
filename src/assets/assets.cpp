@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Raven Core developers
+// Copyright (c) 2017 The STP Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -57,7 +57,7 @@ static const std::regex CHANNEL_INDICATOR(R"(^[^^~#!]+~[^~#!\/]+$)");
 static const std::regex OWNER_INDICATOR(R"(^[^^~#!]+!$)");
 static const std::regex VOTE_INDICATOR(R"(^[^^~#!]+\^[^~#!\/]+$)");
 
-static const std::regex RAVEN_NAMES("^RVN$|^RAVEN$|^RAVENCOIN$");
+static const std::regex STP_NAMES("^RVN$|^STP$|^STPCOIN$");
 
 bool IsRootNameValid(const std::string& name)
 {
@@ -65,7 +65,7 @@ bool IsRootNameValid(const std::string& name)
         && !std::regex_match(name, DOUBLE_PUNCTUATION)
         && !std::regex_match(name, LEADING_PUNCTUATION)
         && !std::regex_match(name, TRAILING_PUNCTUATION)
-        && !std::regex_match(name, RAVEN_NAMES);
+        && !std::regex_match(name, STP_NAMES);
 }
 
 bool IsSubNameValid(const std::string& name)
@@ -660,6 +660,78 @@ bool CTransaction::IsNewAsset() const
     return true;
 }
 
+//! To be called on CTransactions where IsNewAsset returns true
+bool CTransaction::VerifyNewAsset(std::string& strError) const
+{
+    // Issuing an Asset must contain at least 3 CTxOut( STP Burn Tx, Any Number of other Outputs ..., Owner Asset Tx, New Asset Tx)
+    if (vout.size() < 3) {
+        strError  = "bad-txns-issue-vout-size-to-small";
+        return false;
+    }
+
+    // Check for the assets data CTxOut. This will always be the last output in the transaction
+    if (!CheckIssueDataTx(vout[vout.size() - 1])) {
+        strError  = "bad-txns-issue-data-not-found";
+        return false;
+    }
+
+    // Check to make sure the owner asset is created
+    if (!CheckOwnerDataTx(vout[vout.size() - 2])) {
+        strError  = "bad-txns-issue-owner-data-not-found";
+        return false;
+    }
+
+    // Get the asset type
+    CNewAsset asset;
+    std::string address;
+    if (!AssetFromScript(vout[vout.size() - 1].scriptPubKey, asset, address)) {
+        strError = "bad-txns-issue-serialzation-failed";
+        return error("%s : Failed to get new asset from transaction: %s", __func__, this->GetHash().GetHex());
+    }
+
+    AssetType assetType;
+    IsAssetNameValid(asset.strName, assetType);
+
+    std::string strOwnerName;
+    if (!OwnerAssetFromScript(vout[vout.size() - 2].scriptPubKey, strOwnerName, address)) {
+        strError = "bad-txns-issue-owner-serialzation-failed";
+        return false;
+    }
+
+    if (strOwnerName != asset.strName + OWNER_TAG) {
+        strError = "bad-txns-issue-owner-name-doesn't-match";
+        return false;
+    }
+
+    // Check for the Burn CTxOut in one of the vouts ( This is needed because the change CTxOut is places in a random position in the CWalletTx
+    bool fFoundIssueBurnTx = false;
+    for (auto out : vout) {
+        if (CheckIssueBurnTx(out, assetType)) {
+            fFoundIssueBurnTx = true;
+            break;
+        }
+    }
+
+    if (!fFoundIssueBurnTx) {
+        strError = "bad-txns-issue-burn-not-found";
+        return false;
+    }
+
+    // Loop through all of the vouts and make sure only the expected asset creations are taking place
+    int nTransfers = 0;
+    int nOwners = 0;
+    int nIssues = 0;
+    int nReissues = 0;
+    GetTxOutAssetTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+
+    if (nOwners != 1 || nIssues != 1 || nReissues > 0) {
+        strError = "bad-txns-failed-issue-asset-formatting-check";
+        return false;
+    }
+
+    return true;
+}
+
 //! Make sure to call VerifyNewUniqueAsset if this call returns true
 bool CTransaction::IsNewUniqueAsset() const
 {
@@ -778,7 +850,7 @@ bool CTransaction::IsReissueAsset() const
 //! To be called on CTransactions where IsReissueAsset returns true
 bool CTransaction::VerifyReissueAsset(std::string& strError) const
 {
-    // Reissuing an Asset must contain at least 3 CTxOut ( Raven Burn Tx, Any Number of other Outputs ..., Reissue Asset Tx, Owner Asset Change Tx)
+    // Reissuing an Asset must contain at least 3 CTxOut ( STP Burn Tx, Any Number of other Outputs ..., Reissue Asset Tx, Owner Asset Change Tx)
     if (vout.size() < 3) {
         strError  = "bad-txns-vout-size-to-small";
         return false;
@@ -2585,7 +2657,7 @@ bool CreateAssetTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
-            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Raven address: ") + change_address);
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid STP address: ") + change_address);
             return false;
         }
     } else {
@@ -2686,14 +2758,14 @@ bool CreateReissueAssetTransaction(CWallet* pwallet, CCoinControl& coinControl, 
 
     // Check that validitity of the address
     if (!IsValidDestinationString(address)) {
-        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Raven address: ") + address);
+        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid STP address: ") + address);
         return false;
     }
 
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
-            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Raven address: ") + change_address);
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid STP address: ") + change_address);
             return false;
         }
     } else {
@@ -2816,7 +2888,7 @@ bool CreateTransferAssetTransaction(CWallet* pwallet, const CCoinControl& coinCo
         CAmount nAmount = transfer.first.nAmount;
 
         if (!IsValidDestinationString(address)) {
-            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Raven address: ") + address);
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid STP address: ") + address);
             return false;
         }
         auto currentActiveAssetCache = GetCurrentAssetCache();

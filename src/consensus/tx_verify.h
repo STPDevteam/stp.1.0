@@ -1,10 +1,10 @@
 // Copyright (c) 2017-2017 The Bitcoin Core developers
-// Copyright (c) 2017 The Raven Core developers
+// Copyright (c) 2017 The STP Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef RAVEN_CONSENSUS_TX_VERIFY_H
-#define RAVEN_CONSENSUS_TX_VERIFY_H
+#ifndef STP_CONSENSUS_TX_VERIFY_H
+#define STP_CONSENSUS_TX_VERIFY_H
 
 #include "amount.h"
 
@@ -92,4 +92,4 @@ bool EvaluateSequenceLocks(const CBlockIndex& block, std::pair<int, int64_t> loc
  */
 bool SequenceLocks(const CTransaction &tx, int flags, std::vector<int>* prevHeights, const CBlockIndex& block);
 
-#endif // RAVEN_CONSENSUS_TX_VERIFY_H
+#endif // STP_CONSENSUS_TX_VERIFY_H

@@ -1,5 +1,5 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2019 The Raven Core developers
+# Copyright (c) 2017 The STP Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -19,28 +19,28 @@ else
 LIBUNIVALUE = $(UNIVALUE_LIBS)
 endif
 
-RAVEN_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
+STP_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
 
-RAVEN_INCLUDES += -I$(srcdir)/secp256k1/include
-RAVEN_INCLUDES += $(UNIVALUE_CFLAGS)
+STP_INCLUDES += -I$(srcdir)/secp256k1/include
+STP_INCLUDES += $(UNIVALUE_CFLAGS)
 
-LIBRAVEN_SERVER=libraven_server.a
-LIBRAVEN_COMMON=libraven_common.a
-LIBRAVEN_CONSENSUS=libraven_consensus.a
-LIBRAVEN_CLI=libraven_cli.a
-LIBRAVEN_UTIL=libraven_util.a
-LIBRAVEN_CRYPTO=crypto/libraven_crypto.a
-LIBRAVENQT=qt/libravenqt.a
+LIBSTP_SERVER=libstp_server.a
+LIBSTP_COMMON=libstp_common.a
+LIBSTP_CONSENSUS=libstp_consensus.a
+LIBSTP_CLI=libstp_cli.a
+LIBSTP_UTIL=libstp_util.a
+LIBSTP_CRYPTO=crypto/libstp_crypto.a
+LIBSTPQT=qt/libstpqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
 if ENABLE_ZMQ
-LIBRAVEN_ZMQ=libraven_zmq.a
+LIBSTP_ZMQ=libstp_zmq.a
 endif
-if BUILD_RAVEN_LIBS
-LIBRAVENCONSENSUS=libravenconsensus.la
+if BUILD_STP_LIBS
+LIBSTPCONSENSUS=libstpconsensus.la
 endif
 if ENABLE_WALLET
-LIBRAVEN_WALLET=libraven_wallet.a
+LIBSTP_WALLET=libstp_wallet.a
 endif
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
@@ -49,37 +49,37 @@ $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
 EXTRA_LIBRARIES += \
-  $(LIBRAVEN_CRYPTO) \
-  $(LIBRAVEN_UTIL) \
-  $(LIBRAVEN_COMMON) \
-  $(LIBRAVEN_CONSENSUS) \
-  $(LIBRAVEN_SERVER) \
-  $(LIBRAVEN_CLI) \
-  $(LIBRAVEN_WALLET) \
-  $(LIBRAVEN_ZMQ)
+  $(LIBSTP_CRYPTO) \
+  $(LIBSTP_UTIL) \
+  $(LIBSTP_COMMON) \
+  $(LIBSTP_CONSENSUS) \
+  $(LIBSTP_SERVER) \
+  $(LIBSTP_CLI) \
+  $(LIBSTP_WALLET) \
+  $(LIBSTP_ZMQ)
 
-lib_LTLIBRARIES = $(LIBRAVENCONSENSUS)
+lib_LTLIBRARIES = $(LIBSTPCONSENSUS)
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
 TESTS =
 BENCHMARKS =
 
-if BUILD_RAVEND
-  bin_PROGRAMS += ravend
+if BUILD_STPD
+  bin_PROGRAMS += stpd
 endif
 
-if BUILD_RAVEN_CLI
-  bin_PROGRAMS += raven-cli
+if BUILD_STP_CLI
+  bin_PROGRAMS += stp-cli
 endif
 
-if BUILD_RAVEN_TX
-  bin_PROGRAMS += raven-tx
+if BUILD_STP_TX
+  bin_PROGRAMS += stp-tx
 endif
 
 .PHONY: FORCE check-symbols check-security
-# raven core #
-RAVEN_CORE_H = \
+# stp core #
+STP_CORE_H = \
   addrdb.h \
   addressindex.h \
   algo/sph_groestl.h \
@@ -234,12 +234,12 @@ obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
 	@$(top_srcdir)/share/genbuild.sh "$(abs_top_builddir)/src/obj/build.h" \
 	  "$(abs_top_srcdir)"
-libraven_util_a-clientversion.$(OBJEXT): obj/build.h
+libstp_util_a-clientversion.$(OBJEXT): obj/build.h
 
-# server: shared between ravend and raven-qt
-libraven_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
-libraven_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libraven_server_a_SOURCES = \
+# server: shared between stpd and stp-qt
+libstp_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
+libstp_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstp_server_a_SOURCES = \
   addrdb.cpp \
   addrman.cpp \
   bloom.cpp \
@@ -283,23 +283,23 @@ libraven_server_a_SOURCES = \
   validation.cpp \
   validationinterface.cpp \
   versionbits.cpp \
-  $(RAVEN_CORE_H)
+  $(STP_CORE_H)
 
 if ENABLE_ZMQ
-libraven_zmq_a_CPPFLAGS = $(RAVEN_INCLUDES) $(ZMQ_CFLAGS)
-libraven_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libraven_zmq_a_SOURCES = \
+libstp_zmq_a_CPPFLAGS = $(STP_INCLUDES) $(ZMQ_CFLAGS)
+libstp_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstp_zmq_a_SOURCES = \
   zmq/zmqabstractnotifier.cpp \
   zmq/zmqnotificationinterface.cpp \
   zmq/zmqpublishnotifier.cpp
 endif
 
 
-# wallet: shared between ravend and raven-qt, but only linked
+# wallet: shared between stpd and stp-qt, but only linked
 # when wallet enabled
-libraven_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES)
-libraven_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libraven_wallet_a_SOURCES = \
+libstp_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)
+libstp_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstp_wallet_a_SOURCES = \
   wallet/crypter.cpp \
   wallet/db.cpp \
   wallet/feebumper.cpp \
@@ -309,12 +309,12 @@ libraven_wallet_a_SOURCES = \
   wallet/rpcwallet.cpp \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
-  $(RAVEN_CORE_H)
+  $(STP_CORE_H)
 
 # crypto primitives library
-crypto_libraven_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
-crypto_libraven_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libraven_crypto_a_SOURCES = \
+crypto_libstp_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libstp_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libstp_crypto_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
   crypto/chacha20.h \
@@ -334,13 +334,13 @@ crypto_libraven_crypto_a_SOURCES = \
   crypto/sha512.cpp
 
 if USE_ASM
-crypto_libraven_crypto_a_SOURCES += crypto/sha256_sse4.cpp
+crypto_libstp_crypto_a_SOURCES += crypto/sha256_sse4.cpp
 endif
 
 # consensus: shared between all executables that validate any consensus rules.
-libraven_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES)
-libraven_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libraven_consensus_a_SOURCES = \
+libstp_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)
+libstp_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstp_consensus_a_SOURCES = \
   amount.h \
   arith_uint256.cpp \
   arith_uint256.h \
@@ -357,7 +357,7 @@ libraven_consensus_a_SOURCES = \
   primitives/transaction.h \
   pubkey.cpp \
   pubkey.h \
-  script/ravenconsensus.cpp \
+  script/stpconsensus.cpp \
   script/interpreter.cpp \
   script/interpreter.h \
   script/script.cpp \
@@ -375,10 +375,10 @@ libraven_consensus_a_SOURCES = \
   version.h \
   $(RAVEN_CORE_H)
 
-# common: shared between ravend, and raven-qt and non-server tools
-libraven_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES)
-libraven_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libraven_common_a_SOURCES = \
+# common: shared between stpd, and stp-qt and non-server tools
+libstp_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)
+libstp_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstp_common_a_SOURCES = \
   base58.cpp \
   chainparams.cpp \
   coins.cpp \
@@ -395,14 +395,14 @@ libraven_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
-  $(RAVEN_CORE_H)
+  $(STP_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
 # backward-compatibility objects and their sanity checks are linked.
-libraven_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES)
-libraven_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libraven_util_a_SOURCES = \
+libstp_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)
+libstp_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstp_util_a_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
   clientversion.cpp \
@@ -419,102 +419,102 @@ libraven_util_a_SOURCES = \
   utilmoneystr.cpp \
   utilstrencodings.cpp \
   utiltime.cpp \
-  $(RAVEN_CORE_H)
+  $(STP_CORE_H)
 
 if GLIBC_BACK_COMPAT
-libraven_util_a_SOURCES += compat/glibc_compat.cpp
+libstp_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
-# cli: shared between raven-cli and raven-qt
-libraven_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES)
-libraven_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libraven_cli_a_SOURCES = \
+# cli: shared between stp-cli and stp-qt
+libstp_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)
+libstp_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstp_cli_a_SOURCES = \
   rpc/client.cpp \
-  $(RAVEN_CORE_H)
+  $(STP_CORE_H)
 
-nodist_libraven_util_a_SOURCES = $(srcdir)/obj/build.h
+nodist_libstp_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
-# ravend binary #
-ravend_SOURCES = ravend.cpp
-ravend_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES)
-ravend_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-ravend_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# stpd binary #
+stpd_SOURCES = stpd.cpp
+stpd_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)
+stpd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+stpd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-ravend_SOURCES += ravend-res.rc
+stpd_SOURCES += stpd-res.rc
 endif
 
-ravend_LDADD = \
-  $(LIBRAVEN_SERVER) \
-  $(LIBRAVEN_COMMON) \
+stpd_LDADD = \
+  $(LIBSTP_SERVER) \
+  $(LIBSTP_COMMON) \
   $(LIBUNIVALUE) \
-  $(LIBRAVEN_UTIL) \
-  $(LIBRAVEN_WALLET) \
-  $(LIBRAVEN_ZMQ) \
-  $(LIBRAVEN_CONSENSUS) \
-  $(LIBRAVEN_CRYPTO) \
+  $(LIBSTP_UTIL) \
+  $(LIBSTP_WALLET) \
+  $(LIBSTP_ZMQ) \
+  $(LIBSTP_CONSENSUS) \
+  $(LIBSTP_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-ravend_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+stpd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
-# raven-cli binary #
-raven_cli_SOURCES = raven-cli.cpp
-raven_cli_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES) $(EVENT_CFLAGS)
-raven_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-raven_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# stp-cli binary #
+stp_cli_SOURCES = stp-cli.cpp
+stp_cli_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES) $(EVENT_CFLAGS)
+stp_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+stp_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-raven_cli_SOURCES += raven-cli-res.rc
+stp_cli_SOURCES += stp-cli-res.rc
 endif
 
-raven_cli_LDADD = \
-  $(LIBRAVEN_CLI) \
+stp_cli_LDADD = \
+  $(LIBSTP_CLI) \
   $(LIBUNIVALUE) \
-  $(LIBRAVEN_UTIL) \
-  $(LIBRAVEN_CRYPTO)
+  $(LIBSTP_UTIL) \
+  $(LIBSTP_CRYPTO)
 
-raven_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+stp_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
-# raven-tx binary #
-raven_tx_SOURCES = raven-tx.cpp
-raven_tx_CPPFLAGS = $(AM_CPPFLAGS) $(RAVEN_INCLUDES)
-raven_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-raven_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# stp-tx binary #
+stp_tx_SOURCES = stp-tx.cpp
+stp_tx_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)
+stp_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+stp_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-raven_tx_SOURCES += raven-tx-res.rc
+stp_tx_SOURCES += stp-tx-res.rc
 endif
 
-raven_tx_LDADD = \
+stp_tx_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBRAVEN_COMMON) \
-  $(LIBRAVEN_UTIL) \
-  $(LIBRAVEN_CONSENSUS) \
-  $(LIBRAVEN_CRYPTO) \
+  $(LIBSTP_COMMON) \
+  $(LIBSTP_UTIL) \
+  $(LIBSTP_CONSENSUS) \
+  $(LIBSTP_CRYPTO) \
   $(LIBSECP256K1)
 
-raven_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+stp_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
-# ravenconsensus library #
-if BUILD_RAVEN_LIBS
-include_HEADERS = script/ravenconsensus.h
-libravenconsensus_la_SOURCES = $(crypto_libraven_crypto_a_SOURCES) $(libraven_consensus_a_SOURCES)
+# stpconsensus library #
+if BUILD_STP_LIBS
+include_HEADERS = script/stpconsensus.h
+libstpconsensus_la_SOURCES = $(crypto_libstp_crypto_a_SOURCES) $(libstp_consensus_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
-  libravenconsensus_la_SOURCES += compat/glibc_compat.cpp
+  libstpconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libravenconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libravenconsensus_la_LIBADD = $(LIBSECP256K1)
-libravenconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_RAVEN_INTERNAL
-libravenconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libstpconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
+libstpconsensus_la_LIBADD = $(LIBSECP256K1)
+libstpconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_STP_INTERNAL
+libstpconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
 #
@@ -544,12 +544,12 @@ CLEANFILES += obj/build.h
 EXTRA_DIST = $(CTAES_DIST)
 
 
-config/raven-config.h: config/stamp-h1
+config/stp-config.h: config/stamp-h1
 	@$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-config/stamp-h1: $(top_srcdir)/$(subdir)/config/raven-config.h.in $(top_builddir)/config.status
+config/stamp-h1: $(top_srcdir)/$(subdir)/config/stp-config.h.in $(top_builddir)/config.status
 	$(AM_V_at)$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-$(top_srcdir)/$(subdir)/config/raven-config.h.in:  $(am__configure_deps)
-	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/raven-config.h.in
+$(top_srcdir)/$(subdir)/config/stp-config.h.in:  $(am__configure_deps)
+	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/stp-config.h.in
 
 clean-local:
 	-$(MAKE) -C secp256k1 clean
@@ -591,10 +591,3 @@ if ENABLE_BENCH
 include Makefile.bench.include
 endif
 
-if ENABLE_QT
-include Makefile.qt.include
-endif
-
-if ENABLE_QT_TESTS
-include Makefile.qttest.include
-endif

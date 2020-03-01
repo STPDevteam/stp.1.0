@@ -1,10 +1,15 @@
+<<<<<<< HEAD
 // Copyright (c) 2014-2018 The Bitcoin Core developers
 // Copyright (c) 2017 The Raven Core developers
+=======
+// Copyright (c) 2014-2016 The Bitcoin Core developers
+// Copyright (c) 2017 The STP Core developers
+>>>>>>> stp.network init
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef RAVEN_CRYPTO_RIPEMD160_H
-#define RAVEN_CRYPTO_RIPEMD160_H
+#ifndef STP_CRYPTO_RIPEMD160_H
+#define STP_CRYPTO_RIPEMD160_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -26,4 +31,4 @@ public:
     CRIPEMD160& Reset();
 };
 
-#endif // RAVEN_CRYPTO_RIPEMD160_H
+#endif // STP_CRYPTO_RIPEMD160_H
