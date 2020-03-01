@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2017 The Raven Core developers
+// Copyright (c) 2017 The STP Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef RAVEN_SCRIPT_SIGCACHE_H
-#define RAVEN_SCRIPT_SIGCACHE_H
+#ifndef STP_SCRIPT_SIGCACHE_H
+#define STP_SCRIPT_SIGCACHE_H
 
 #include "script/interpreter.h"
 
@@ -54,4 +54,4 @@ public:
 
 void InitSignatureCache();
 
-#endif // RAVEN_SCRIPT_SIGCACHE_H
+#endif // STP_SCRIPT_SIGCACHE_H

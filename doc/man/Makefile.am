@@ -1,17 +1,17 @@
 dist_man1_MANS=
 
-if BUILD_RAVEND
-  dist_man1_MANS+=ravend.1
+if BUILD_STPD
+  dist_man1_MANS+=stpd.1
 endif
 
 if ENABLE_QT
-  dist_man1_MANS+=raven-qt.1
+  dist_man1_MANS+=stp-qt.1
 endif
 
-if BUILD_RAVEN_CLI
-  dist_man1_MANS+=raven-cli.1
+if BUILD_STP_CLI
+  dist_man1_MANS+=stp-cli.1
 endif
 
-if BUILD_RAVEN_TX
-  dist_man1_MANS+=raven-tx.1
+if BUILD_STP_TX
+  dist_man1_MANS+=stp-tx.1
 endif

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2018 The Raven Core developers
+# Copyright (c) 2017-2018 The STP Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test gettxoutproof and verifytxoutproof RPCs."""
 
-from test_framework.test_framework import RavenTestFramework
+from test_framework.test_framework import STPTestFramework
 from test_framework.util import *
 
-class MerkleBlockTest(RavenTestFramework):
+class MerkleBlockTest(STPTestFramework):
     def set_test_params(self):
         self.num_nodes = 4
         self.setup_clean_chain = True

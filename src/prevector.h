@@ -1,10 +1,10 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
-// Copyright (c) 2017 The Raven Core developers
+// Copyright (c) 2017 The STP Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef RAVEN_PREVECTOR_H
-#define RAVEN_PREVECTOR_H
+#ifndef STP_PREVECTOR_H
+#define STP_PREVECTOR_H
 
 #include <assert.h>
 #include <stdlib.h>
@@ -515,4 +515,4 @@ public:
 };
 #pragma pack(pop)
 
-#endif // RAVEN_PREVECTOR_H
+#endif // STP_PREVECTOR_H
