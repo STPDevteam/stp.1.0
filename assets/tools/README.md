@@ -2,7 +2,7 @@
 
 ### Bulk Issuance
 Issue assets from a .csv file.
-* Make a copy of https://docs.google.com/spreadsheets/d/1Ym88-ggbw8yiMgVxOtVYDsCXJGNGZqlpOfgdbVK8iYU
+* Make a copy of https://docs.google.com/spreadsheets/d/1snBSc7pexhRLO3m9wwMHgpLPs_qpIoQ2mwAIUspb2y8/edit#gid=0
 * Edit your own data
 * Download as .csv and put in this folder.
 * ```python issuebulk.py```
