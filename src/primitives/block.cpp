@@ -37,15 +37,6 @@ void BlockNetwork::SetNetwork(const std::string& net)
 
 uint256 CBlockHeader::GetHash() const
 {
-    uint32_t nTimeToUse = MAINNET_X16RV2ACTIVATIONTIME;
-    if (bNetwork.fOnTestnet) {
-        nTimeToUse = TESTNET_X16RV2ACTIVATIONTIME;
-    } else if (bNetwork.fOnRegtest) {
-        nTimeToUse = REGTEST_X16RV2ACTIVATIONTIME;
-    }
-    if (nTime >= nTimeToUse) {
-        return HashX16RV2(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-    }
 
     return HashX16R(BEGIN(nVersion), END(nNonce), hashPrevBlock);
 }
@@ -55,10 +46,6 @@ uint256 CBlockHeader::GetX16RHash() const
     return HashX16R(BEGIN(nVersion), END(nNonce), hashPrevBlock);
 }
 
-uint256 CBlockHeader::GetX16RV2Hash() const
-{
-    return HashX16RV2(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-}
 
 std::string CBlock::ToString() const
 {

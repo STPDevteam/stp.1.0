@@ -373,7 +373,7 @@ libstp_consensus_a_SOURCES = \
   utilstrencodings.cpp \
   utilstrencodings.h \
   version.h \
-  $(RAVEN_CORE_H)
+  $(STP_CORE_H)
 
 # common: shared between stpd, and stp-qt and non-server tools
 libstp_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(STP_INCLUDES)

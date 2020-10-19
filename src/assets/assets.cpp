@@ -57,7 +57,7 @@ static const std::regex CHANNEL_INDICATOR(R"(^[^^~#!]+~[^~#!\/]+$)");
 static const std::regex OWNER_INDICATOR(R"(^[^^~#!]+!$)");
 static const std::regex VOTE_INDICATOR(R"(^[^^~#!]+\^[^~#!\/]+$)");
 
-static const std::regex STP_NAMES("^RVN$|^STP$|^STPCOIN$");
+static const std::regex STP_NAMES("^STP$|^STPCOIN$");
 
 bool IsRootNameValid(const std::string& name)
 {
@@ -438,13 +438,13 @@ void CNewAsset::ConstructTransaction(CScript& script) const
     ssAsset << *this;
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(RVN_R); // r
-    vchMessage.push_back(RVN_V); // v
-    vchMessage.push_back(RVN_N); // n
-    vchMessage.push_back(RVN_Q); // q
+    vchMessage.push_back(STP_R); // r
+    vchMessage.push_back(STP_V); // v
+    vchMessage.push_back(STP_N); // n
+    vchMessage.push_back(STP_Q); // q
 
     vchMessage.insert(vchMessage.end(), ssAsset.begin(), ssAsset.end());
-    script << OP_RVN_ASSET << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_STP_ASSET << ToByteVector(vchMessage) << OP_DROP;
 }
 
 void CNewAsset::ConstructOwnerTransaction(CScript& script) const
@@ -453,13 +453,13 @@ void CNewAsset::ConstructOwnerTransaction(CScript& script) const
     ssOwner << std::string(this->strName + OWNER_TAG);
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(RVN_R); // r
-    vchMessage.push_back(RVN_V); // v
-    vchMessage.push_back(RVN_N); // n
-    vchMessage.push_back(RVN_O); // o
+    vchMessage.push_back(STP_R); // r
+    vchMessage.push_back(STP_V); // v
+    vchMessage.push_back(STP_N); // n
+    vchMessage.push_back(STP_O); // o
 
     vchMessage.insert(vchMessage.end(), ssOwner.begin(), ssOwner.end());
-    script << OP_RVN_ASSET << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_STP_ASSET << ToByteVector(vchMessage) << OP_DROP;
 }
 
 bool AssetFromTransaction(const CTransaction& tx, CNewAsset& asset, std::string& strAddress)
@@ -748,7 +748,7 @@ bool CTransaction::IsNewUniqueAsset() const
 //! Call this function after IsNewUniqueAsset
 bool CTransaction::VerifyNewUniqueAsset(std::string& strError) const
 {
-    // Must contain at least 3 outpoints (RVN burn, owner change and one or more new unique assets that share a root (should be in trailing position))
+    // Must contain at least 3 outpoints (STP burn, owner change and one or more new unique assets that share a root (should be in trailing position))
     if (vout.size() < 3) {
         strError  = "bad-txns-unique-vout-size-to-small";
         return false;
@@ -941,13 +941,13 @@ void CAssetTransfer::ConstructTransaction(CScript& script) const
     ssTransfer << *this;
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(RVN_R); // r
-    vchMessage.push_back(RVN_V); // v
-    vchMessage.push_back(RVN_N); // n
-    vchMessage.push_back(RVN_T); // t
+    vchMessage.push_back(STP_R); // r
+    vchMessage.push_back(STP_V); // v
+    vchMessage.push_back(STP_N); // n
+    vchMessage.push_back(STP_T); // t
 
     vchMessage.insert(vchMessage.end(), ssTransfer.begin(), ssTransfer.end());
-    script << OP_RVN_ASSET << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_STP_ASSET << ToByteVector(vchMessage) << OP_DROP;
 }
 
 CReissueAsset::CReissueAsset(const std::string &strAssetName, const CAmount &nAmount, const int &nUnits, const int &nReissuable,
@@ -1020,7 +1020,6 @@ bool CReissueAsset::IsValid(std::string &strError, CAssetsCache& assetCache, boo
 //! To be called on CTransactions where IsNewAsset returns true
 bool CTransaction::VerifyNewAsset(std::string& strError, NewAssetInfo* newAssetInfo) const
 {
-    // Issuing an Asset must contain at least 3 CTxOut( Raven Burn Tx, Any Number of other Outputs ..., Owner Asset Tx, New Asset Tx)
     if (vout.size() < 3) {
         strError  = "bad-txns-issue-vout-size-to-small";
         return false;
@@ -1123,13 +1122,13 @@ void CReissueAsset::ConstructTransaction(CScript& script) const
     ssReissue << *this;
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(RVN_R); // r
-    vchMessage.push_back(RVN_V); // v
-    vchMessage.push_back(RVN_N); // n
-    vchMessage.push_back(RVN_R); // r
+    vchMessage.push_back(STP_R); // r
+    vchMessage.push_back(STP_V); // v
+    vchMessage.push_back(STP_N); // n
+    vchMessage.push_back(STP_R); // r
 
     vchMessage.insert(vchMessage.end(), ssReissue.begin(), ssReissue.end());
-    script << OP_RVN_ASSET << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_STP_ASSET << ToByteVector(vchMessage) << OP_DROP;
 }
 
 bool CReissueAsset::IsNull() const
@@ -2094,7 +2093,7 @@ bool CheckIssueBurnTx(const CTxOut& txOut, const AssetType& type)
 
 bool CheckReissueBurnTx(const CTxOut& txOut)
 {
-    // Check the first transaction and verify that the correct RVN Amount
+    // Check the first transaction and verify that the correct STP Amount
     if (txOut.nValue != GetReissueAssetBurnAmount())
         return false;
 
@@ -2116,7 +2115,7 @@ bool CheckReissueBurnTx(const CTxOut& txOut)
 
 bool CheckIssueDataTx(const CTxOut& txOut)
 {
-    // Verify 'rvnq' is in the transaction
+    // Verify 'STPq' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     int nStartingIndex = 0;
@@ -2125,7 +2124,7 @@ bool CheckIssueDataTx(const CTxOut& txOut)
 
 bool CheckReissueDataTx(const CTxOut& txOut)
 {
-    // Verify 'rvnr' is in the transaction
+    // Verify 'STPr' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     return IsScriptReissueAsset(scriptPubKey);
@@ -2133,7 +2132,7 @@ bool CheckReissueDataTx(const CTxOut& txOut)
 
 bool CheckOwnerDataTx(const CTxOut& txOut)
 {
-    // Verify 'rvnq' is in the transaction
+    // Verify 'STPq' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     return IsScriptOwnerAsset(scriptPubKey);
@@ -2141,7 +2140,7 @@ bool CheckOwnerDataTx(const CTxOut& txOut)
 
 bool CheckTransferOwnerTx(const CTxOut& txOut)
 {
-    // Verify 'rvnq' is in the transaction
+    // Verify 'STPq' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     return IsScriptTransferAsset(scriptPubKey);
@@ -2699,7 +2698,7 @@ bool CreateAssetTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
 
     CAmount curBalance = pwallet->GetBalance();
 
-    // Check to make sure the wallet has the RVN required by the burnAmount
+    // Check to make sure the wallet has the STP required by the burnAmount
     if (curBalance < burnAmount) {
         error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
         return false;
@@ -2822,7 +2821,7 @@ bool CreateReissueAssetTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     // Get the current burn amount for issuing an asset
     CAmount burnAmount = GetReissueAssetBurnAmount();
 
-    // Check to make sure the wallet has the RVN required by the burnAmount
+    // Check to make sure the wallet has the STP required by the burnAmount
     if (curBalance < burnAmount) {
         error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
         return false;
@@ -2871,7 +2870,7 @@ bool CreateTransferAssetTransaction(CWallet* pwallet, const CCoinControl& coinCo
     // Check for a balance before processing transfers
     CAmount curBalance = pwallet->GetBalance();
     if (curBalance == 0) {
-        error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, std::string("This wallet doesn't contain any RVN, transfering an asset requires a network fee"));
+        error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, std::string("This wallet doesn't contain any STP, transfering an asset requires a network fee"));
         return false;
     }
 

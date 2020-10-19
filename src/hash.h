@@ -22,10 +22,6 @@ extern "C" {
 #include <vector>
 
 typedef uint256 ChainCode;
-<<<<<<< HEAD
-
-/** A hasher class for Bitcoin's 256-bit hash (double SHA-256). */
-=======
 #ifdef GLOBALDEFINED
 #define GLOBAL
 #else
@@ -352,10 +348,6 @@ extern double algoHashTotal[16];
 extern int algoHashHits[16];
 
 
-<<<<<<< HEAD
-#endif // RAVEN_HASH_H
-
-=======
 template<typename T1>
 inline uint256 HashX16R(const T1 pbegin, const T1 pend, const uint256 PrevBlockHash)
 {
